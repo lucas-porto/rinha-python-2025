@@ -13,9 +13,7 @@ def get_cached_timestamp(dt: datetime) -> float:
     return dt.timestamp()
 
 
-async def save_payment(
-    cid: str, amount: float, processor: str, requested_at: datetime
-):
+async def save_payment(cid: str, amount: float, processor: str, requested_at: datetime):
     timestamp = get_cached_timestamp(requested_at)
 
     payment_json = orjson.dumps(

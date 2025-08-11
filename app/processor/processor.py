@@ -25,13 +25,14 @@ async def process_payment_in_processor(
         client = await get_httpx_client()
         processor_url = get_processor_url(processor_type)
 
-        # Enviar o payload completo conforme especificação
         processor_payload = {
             "correlationId": payload["correlationId"],
             "amount": payload["amount"],
-            "requestedAt": payload["requested_at"]
+            "requestedAt": payload["requested_at"],
         }
-        response = await client.post(processor_url, json=processor_payload, timeout=timeout)
+        response = await client.post(
+            processor_url, json=processor_payload, timeout=timeout
+        )
 
         if response.status_code == 422:
             return "not avaiable"
@@ -39,7 +40,6 @@ async def process_payment_in_processor(
         if response.status_code != 200:
             response.raise_for_status()
 
-        # Retornar a resposta do processador
         return response.text
     except Exception as e:
         raise e
