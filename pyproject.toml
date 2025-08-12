@@ -1,7 +1,7 @@
 [project]
 name = "rinha-python-2025"
 version = "0.1.0"
-description = "Add your description here"
+description = "Projeto Rinha Backend 2025"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

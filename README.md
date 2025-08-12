@@ -8,7 +8,7 @@ Sistema de processamento de pagamentos com arquitetura distribuída, utilizando 
 
 ## Arquitetura
 
-- **API REST**: Starlette/FastAPI para endpoints HTTP
+- **API REST**: Starlette para endpoints HTTP
 - **Workers**: Processamento assíncrono com múltiplos workers
 - **Redis**: Fila de mensagens e armazenamento de dados
 - **HAProxy**: Load balancer para distribuição de carga
