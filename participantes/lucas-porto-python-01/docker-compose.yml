@@ -1,6 +1,7 @@
 x-worker-template: &worker-template
   image: lucasportos/rinha-python-worker:latest
   environment:
+    - TZ=UTC
     - REDIS_URL=redis://redis:6379
     - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
     - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
@@ -12,11 +13,11 @@ x-worker-template: &worker-template
   deploy:
     resources:
       limits:
-        cpus: '0.3'
-        memory: 60M
+        cpus: '0.25'
+        memory: 50M
       reservations:
         cpus: '0.1'
-        memory: 30M
+        memory: 25M
   restart: unless-stopped
   networks:
     - rinha-network
@@ -46,7 +47,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
+          cpus: '0.15'
           memory: 50M
         reservations:
           cpus: '0.05'
@@ -68,6 +69,7 @@ services:
     expose:
       - "9999"
     environment:
+      - TZ=UTC
       - REDIS_URL=redis://redis:6379
       - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
@@ -79,8 +81,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.4'
-          memory: 120M
+          cpus: '0.35'
+          memory: 100M
         reservations:
           cpus: '0.1'
           memory: 30M
@@ -105,17 +107,24 @@ services:
     container_name: rinha-python-worker2
     command: python -m app.worker.setup
 
+  worker3:
+    <<: *worker-template
+    container_name: rinha-python-worker3
+    command: python -m app.worker.setup
+
   redis:
     image: redis:7-alpine
     container_name: rinha-redis
     ports:
       - "6379:6379"
+    environment:
+      - TZ=UTC
     command: redis-server --maxmemory 60mb --maxmemory-policy allkeys-lru --save "" --appendonly no
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: 60M
+          cpus: '0.25'
+          memory: 50M
         reservations:
           cpus: '0.05'
           memory: 20M
