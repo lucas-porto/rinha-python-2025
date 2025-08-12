@@ -19,7 +19,7 @@ def get_processor_url(processor_type: str, endpoint: str = "payments") -> str:
 async def process_payment_in_processor(
     payload: Dict[str, Any],
     processor_type: str = "default",
-    timeout: Optional[float] = 2.5,
+    timeout: Optional[float] = 6.0,  # Timeout adequado para o fallback com 5s de delay
 ) -> str:
     try:
         client = await get_httpx_client()
@@ -56,3 +56,6 @@ async def get_payment_processor_health(
         return response.status_code == 200
     except Exception:
         return False
+
+
+

@@ -33,7 +33,10 @@ def iso_to_timestamp(date_string: str) -> Tuple[Optional[str], bool]:
         return None, False
 
     if len(date_string) <= 13 and date_string.isdigit():
-        return date_string, True
+        # Se é um timestamp em milissegundos, converter para segundos
+        timestamp_ms = fast_parse_int(date_string)
+        timestamp_s = timestamp_ms / 1000.0
+        return str(timestamp_s), True
 
     match = ISO_DATE_PATTERN.match(date_string)
     if not match:
@@ -47,11 +50,13 @@ def iso_to_timestamp(date_string: str) -> Tuple[Optional[str], bool]:
     second = fast_parse_int(match.group(6))
     milliseconds = fast_parse_int(match.group(7)) if match.group(7) else 0
 
+    # Criar time tuple e converter para timestamp UTC
     time_tuple = (year, month, day, hour, minute, second, 0, 0, 0)
     epoch_seconds = calendar.timegm(time_tuple)
-    timestamp_ms = epoch_seconds * 1000 + milliseconds
+    # Converter para segundos (float) para compatibilidade com Redis
+    timestamp_s = epoch_seconds + (milliseconds / 1000.0)
 
-    return str(timestamp_ms), True
+    return str(timestamp_s), True
 
 
 def round_to_cents(value: float) -> float:

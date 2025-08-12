@@ -10,7 +10,13 @@ KEY_SET = "payments_by_date"
 
 @lru_cache(maxsize=1024)
 def get_cached_timestamp(dt: datetime) -> float:
-    return dt.timestamp()
+    # Converter para UTC timestamp
+    if dt.tzinfo is not None:
+        # Se tem timezone, converter para UTC
+        return dt.timestamp()
+    else:
+        # Se não tem timezone, assumir que é UTC
+        return dt.timestamp()
 
 
 async def save_payment(cid: str, amount: float, processor: str, requested_at: datetime):

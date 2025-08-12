@@ -19,14 +19,16 @@ async def process_payment_with_fallback(
 ) -> bool:
     requested_at = datetime.fromisoformat(
         payment_data["requested_at"].replace("Z", "+00:00")
-    )
+    ).replace(tzinfo=None)  # Remover timezone para usar UTC
 
+    # Tentar primeiro o processor default
     try:
         result = await process_payment_in_processor(
             payload=payment_data, processor_type="default"
         )
 
-        if result == "not avaiable":
+        # Se o default processou com sucesso, salvar
+        if result != "not avaiable":
             await save_payment(
                 cid=payment_data["correlationId"],
                 amount=payment_data["amount"],
@@ -35,29 +37,17 @@ async def process_payment_with_fallback(
             )
             return True
 
-        await save_payment(
-            cid=payment_data["correlationId"],
-            amount=payment_data["amount"],
-            processor="default",
-            requested_at=requested_at,
-        )
-        return True
-
     except Exception:
-        try:
-            result = await process_payment_in_processor(
-                payload=payment_data, processor_type="fallback"
-            )
+        pass
 
-            if result == "not avaiable":
-                await save_payment(
-                    cid=payment_data["correlationId"],
-                    amount=payment_data["amount"],
-                    processor="fallback",
-                    requested_at=requested_at,
-                )
-                return True
+    # Se o default falhou ou não está disponível, tentar fallback
+    try:
+        result = await process_payment_in_processor(
+            payload=payment_data, processor_type="fallback"
+        )
 
+        # Se o fallback processou com sucesso, salvar
+        if result != "not avaiable":
             await save_payment(
                 cid=payment_data["correlationId"],
                 amount=payment_data["amount"],
@@ -66,14 +56,17 @@ async def process_payment_with_fallback(
             )
             return True
 
-        except Exception:
-            await save_payment(
-                cid=payment_data["correlationId"],
-                amount=payment_data["amount"],
-                processor="error",
-                requested_at=requested_at,
-            )
-            return True
+    except Exception:
+        pass
+
+    # Se ambos falharam, salvar como erro
+    await save_payment(
+        cid=payment_data["correlationId"],
+        amount=payment_data["amount"],
+        processor="error",
+        requested_at=requested_at,
+    )
+    return True
 
 
 async def process_payment_queue(semaphore: asyncio.Semaphore):
@@ -92,15 +85,9 @@ async def process_payment_queue(semaphore: asyncio.Semaphore):
                     if "retry_count" not in payment_data:
                         payment_data["retry_count"] = 0
 
-                    success = await process_payment_with_fallback(
+                    await process_payment_with_fallback(
                         payment_data, payment_data["retry_count"]
                     )
-
-                    if not success and payment_data["retry_count"] < MAX_RETRIES:
-                        payment_data["retry_count"] += 1
-                        await redis_client.rpush(
-                            "payment_queue", orjson.dumps(payment_data)
-                        )
 
                 await asyncio.sleep(IDLE_SLEEP)
 

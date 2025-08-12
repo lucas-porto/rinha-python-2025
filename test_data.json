@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-08-12T20:08:01.429323",
+  "backend": {
+    "default": {
+      "totalRequests": 0,
+      "totalAmount": 0.0,
+      "totalFee": 0.0,
+      "feePerTransaction": 0.05
+    },
+    "fallback": {
+      "totalRequests": 0,
+      "totalAmount": 0.0,
+      "totalFee": 0.0,
+      "feePerTransaction": 0.15
+    }
+  },
+  "processors": {
+    "default": {
+      "totalAmount": 261247.2,
+      "totalRequests": 13128,
+      "totalFee": 13062.36,
+      "feePerTransaction": 0.05
+    },
+    "fallback": {
+      "totalAmount": 2985.0,
+      "totalRequests": 150,
+      "totalFee": 447.75,
+      "feePerTransaction": 0.15
+    }
+  },
+  "redis_count": 0
+}
